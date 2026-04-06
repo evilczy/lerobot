@@ -1,0 +1,9 @@
+[submodule "third_party/pika_sdk"]
+	path = third_party/pika_sdk
+	url = https://github.com/evilczy/pika_sdk.git
+[submodule "third_party/librealsense"]
+	path = third_party/librealsense
+	url = https://github.com/evilczy/librealsense.git
+[submodule "third_party/libsurvive"]
+	path = third_party/libsurvive
+	url = https://github.com/evilczy/libsurvive.git
