@@ -32,6 +32,7 @@ from pprint import pformat
 import draccus
 
 from lerobot.cameras.opencv.configuration_opencv import OpenCVCameraConfig  # noqa: F401
+from lerobot.cameras.pika.configuration_pika import PikaCameraConfig  # noqa: F401
 from lerobot.cameras.realsense.configuration_realsense import RealSenseCameraConfig  # noqa: F401
 from lerobot.robots import (  # noqa: F401
     Robot,
@@ -45,6 +46,7 @@ from lerobot.robots import (  # noqa: F401
     omx_follower,
     openarm_follower,
     so_follower,
+    ur_pika,
 )
 from lerobot.teleoperators import (  # noqa: F401
     Teleoperator,

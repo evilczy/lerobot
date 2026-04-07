@@ -16,6 +16,8 @@
 
 from unittest.mock import patch
 
+import draccus
+
 from lerobot.scripts.lerobot_calibrate import CalibrateConfig, calibrate
 from lerobot.scripts.lerobot_record import DatasetRecordConfig, RecordConfig, record
 from lerobot.scripts.lerobot_replay import DatasetReplayConfig, ReplayConfig, replay
@@ -29,6 +31,19 @@ def test_calibrate():
     robot_cfg = MockRobotConfig()
     cfg = CalibrateConfig(robot=robot_cfg)
     calibrate(cfg)
+
+
+def test_calibrate_config_parses_ur_pika():
+    cfg = draccus.parse(
+        CalibrateConfig,
+        args=[
+            "--robot.type=ur_pika",
+            "--robot.robot_ip=192.168.0.2",
+        ],
+    )
+
+    assert cfg.robot is not None
+    assert cfg.robot.type == "ur_pika"
 
 
 def test_teleoperate():
@@ -83,6 +98,38 @@ def test_record_and_resume(tmp_path):
     assert dataset.meta.total_tasks == 1
 
 
+def test_record_config_parses_ur_pika():
+    cfg = draccus.parse(
+        RecordConfig,
+        args=[
+            "--robot.type=ur_pika",
+            "--robot.robot_ip=192.168.0.2",
+            "--teleop.type=mock_teleop",
+            f"--dataset.repo_id={DUMMY_REPO_ID}",
+            "--dataset.single_task=Dummy task",
+        ],
+    )
+
+    assert cfg.robot.type == "ur_pika"
+    assert cfg.teleop is not None
+
+
+def test_record_config_parses_explicit_pika_camera_override():
+    cfg = draccus.parse(
+        RecordConfig,
+        args=[
+            "--robot.type=ur_pika",
+            "--robot.robot_ip=192.168.0.2",
+            "--robot.cameras={front_fisheye: {type: pika, source: fisheye, width: 640, height: 480, fps: 30}}",
+            "--teleop.type=keyboard",
+            f"--dataset.repo_id={DUMMY_REPO_ID}",
+            "--dataset.single_task=Dummy task",
+        ],
+    )
+
+    assert cfg.robot.cameras["front_fisheye"].type == "pika"
+
+
 def test_record_and_replay(tmp_path):
     robot_cfg = MockRobotConfig()
     teleop_cfg = MockTeleopConfig()
@@ -121,3 +168,17 @@ def test_record_and_replay(tmp_path):
         mock_get_safe_version.return_value = "v3.0"
         mock_snapshot_download.return_value = str(tmp_path / "record_and_replay")
         replay(replay_cfg)
+
+
+def test_replay_config_parses_ur_pika():
+    cfg = draccus.parse(
+        ReplayConfig,
+        args=[
+            "--robot.type=ur_pika",
+            "--robot.robot_ip=192.168.0.2",
+            f"--dataset.repo_id={DUMMY_REPO_ID}",
+            "--dataset.episode=0",
+        ],
+    )
+
+    assert cfg.robot.type == "ur_pika"

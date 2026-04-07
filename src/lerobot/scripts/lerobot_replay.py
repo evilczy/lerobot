@@ -46,6 +46,7 @@ from pathlib import Path
 from pprint import pformat
 
 from lerobot.configs import parser
+from lerobot.cameras.pika.configuration_pika import PikaCameraConfig  # noqa: F401
 from lerobot.datasets.lerobot_dataset import LeRobotDataset
 from lerobot.processor import (
     make_default_robot_action_processor,
@@ -64,6 +65,7 @@ from lerobot.robots import (  # noqa: F401
     reachy2,
     so_follower,
     unitree_g1,
+    ur_pika,
 )
 from lerobot.utils.constants import ACTION
 from lerobot.utils.import_utils import register_third_party_plugins

@@ -22,6 +22,7 @@ from __future__ import annotations
 import time
 from queue import Queue
 
+import draccus
 import pytest
 import torch
 
@@ -260,6 +261,7 @@ def test_robot_client_registers_builtin_robot_types():
         "koch_follower",
         "omx_follower",
         "bi_so_follower",
+        "ur_pika",
     ]
     for robot_type in expected_robot_types:
         assert robot_type in known_choices, (
@@ -267,3 +269,21 @@ def test_robot_client_registers_builtin_robot_types():
             f"Ensure the corresponding module is imported in robot_client.py. "
             f"Known choices: {sorted(known_choices)}"
         )
+
+
+def test_robot_client_config_parses_ur_pika():
+    import lerobot.async_inference.robot_client  # noqa: F401
+    from lerobot.async_inference.configs import RobotClientConfig
+
+    cfg = draccus.parse(
+        RobotClientConfig,
+        args=[
+            "--robot.type=ur_pika",
+            "--robot.robot_ip=192.168.0.2",
+            "--policy_type=test",
+            "--pretrained_name_or_path=test",
+            "--actions_per_chunk=8",
+        ],
+    )
+
+    assert cfg.robot.type == "ur_pika"

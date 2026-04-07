@@ -117,6 +117,8 @@
     title: OMX
   - local: openarm
     title: OpenArm
+  - local: ur_pika
+    title: UR + Pika
   title: "Robots"
 - sections:
   - local: phone_teleop

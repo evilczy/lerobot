@@ -1,0 +1,174 @@
+# UR + Pika
+
+This page describes the built-in `ur_pika` hardware integration for running a Universal Robots arm together with a Pika gripper and Pika cameras in `lerobot`.
+
+## Overview
+
+`ur_pika` is a `Robot` implementation that combines:
+
+- A UR arm controlled with URScript socket commands on port `30001`
+- UR robot-state reads from the secondary interface on port `30012`
+- A Pika gripper controlled through the vendored SDK in `third_party/pika_sdk`
+- Optional Pika fisheye and wrist RealSense cameras
+
+The v1 integration is designed for stable deployment around `10Hz`. This matches the current transport design based on the UR socket communication tutorial and the Primary/Secondary state stream.
+
+## Control Modes
+
+`ur_pika` supports two control modes:
+
+- `joint`
+- `tcp`
+
+Use `joint` when you plan to collect data or deploy VLA/ACT policies. Keep `tcp` for cases where your action space is already defined in Cartesian space.
+
+Do not mix `joint` and `tcp` datasets in the same training run. The robot exposes different action and observation schemas in each mode.
+
+### `joint` schema
+
+Observation and action keys:
+
+- `joint_1.pos`
+- `joint_2.pos`
+- `joint_3.pos`
+- `joint_4.pos`
+- `joint_5.pos`
+- `joint_6.pos`
+- `gripper.pos`
+
+Units:
+
+- joints: `rad`
+- gripper: `mm`
+
+Robot type metadata becomes `ur_pika_joint`.
+
+### `tcp` schema
+
+Observation and action keys:
+
+- `tcp_x.pos`
+- `tcp_y.pos`
+- `tcp_z.pos`
+- `tcp_rx.pos`
+- `tcp_ry.pos`
+- `tcp_rz.pos`
+- `gripper.pos`
+
+Units:
+
+- translation: `m`
+- rotation: axis-angle `rad`
+- gripper: `mm`
+
+Robot type metadata becomes `ur_pika_tcp`.
+
+## Default Cameras
+
+If you do not override `robot.cameras`, `ur_pika` creates two Pika-backed cameras:
+
+- `front_fisheye`
+- `wrist`
+
+The runtime keeps the gripper and cameras on one shared Pika device handle so the SDK is initialized once per serial port.
+
+## Configuration
+
+Minimum configuration:
+
+```yaml
+robot:
+  type: ur_pika
+  robot_ip: 192.168.0.2
+```
+
+Common overrides:
+
+- `robot.control_mode=joint` or `robot.control_mode=tcp`
+- `robot.gripper_port=/dev/ttyUSB81`
+- `robot.command_port=30001`
+- `robot.state_port=30012`
+- `robot.socket_timeout_s=2.0`
+
+Pika auto-detection can also be overridden with environment variables:
+
+- `PIKA_GRIPPER_PORT`
+- `PIKA_FISHEYE_DEVICE`
+- `PIKA_REALSENSE_SERIAL`
+
+## Recording And Replay
+
+`lerobot-record` works with `ur_pika`, but only when the action source already matches the robot schema, for example:
+
+- a compatible teleoperator that outputs `joint_*.pos` or `tcp_*.pos`
+- a policy deployment path
+
+There is currently no dedicated built-in teleoperator for `ur_pika`, so do not use the generic keyboard teleoperator as your first hardware test.
+
+Start with a direct Python smoke test instead:
+
+```bash
+python - <<'PY'
+from pathlib import Path
+
+from lerobot.robots.ur_pika import URPika, URPikaConfig
+
+robot = URPika(
+    URPikaConfig(
+        robot_ip="192.168.0.2",
+        control_mode="joint",
+        calibration_dir=Path("./calibration/ur_pika"),
+    )
+)
+
+robot.connect()
+try:
+    obs = robot.get_observation()
+    print(sorted(obs))
+finally:
+    robot.disconnect()
+PY
+```
+
+Replay a collected episode:
+
+```bash
+lerobot-replay \
+  --robot.type=ur_pika \
+  --robot.robot_ip=192.168.0.2 \
+  --robot.control_mode=joint \
+  --dataset.repo_id=<user>/<dataset> \
+  --dataset.episode=0
+```
+
+`lerobot-calibrate` can parse and instantiate `ur_pika`, but calibration is a no-op because the UR arm and Pika gripper do not use the Feetech-style calibration flow.
+
+## Async Inference
+
+You can deploy chunked policies through the async robot client:
+
+```bash
+python -m lerobot.async_inference.robot_client \
+  --robot.type=ur_pika \
+  --robot.robot_ip=192.168.0.2 \
+  --robot.control_mode=joint \
+  --server_address=127.0.0.1:8080 \
+  --policy_type=act \
+  --pretrained_name_or_path=<user>/<policy> \
+  --actions_per_chunk=8
+```
+
+For VLA deployment on real hardware, start with:
+
+- `joint` control mode
+- `10Hz` environment loop
+- fixed camera placement
+- separate datasets per task and per action schema
+
+## Notes
+
+- The UR motion path uses `movej` in `joint` mode and `movel` in `tcp` mode.
+- The integration rejects actions while the robot is emergency-stopped or protective-stopped.
+- Relative target clipping is enabled by default for arm and gripper commands.
+- `lerobot-find-cameras` is not extended for Pika in this integration. Configure cameras through `ur_pika` directly.
+- The first real-hardware validation should be `connect()` -> `get_observation()` -> very small `send_action()` deltas before attempting `lerobot-record` or async policy deployment.

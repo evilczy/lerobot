@@ -465,6 +465,35 @@ Check out these two packages from the community:
 - https://github.com/SpesRobotics/lerobot-robot-xarm
 - https://github.com/SpesRobotics/lerobot-teleoperator-teleop
 
+### Built-in Example: `ur_pika`
+
+This repository now includes a built-in `ur_pika` robot implementation that shows how to bridge:
+
+- a TCP-controlled industrial arm (`URScript` over the UR controller socket interface)
+- a serially controlled gripper (`Pika Gripper`)
+- camera streams exposed through the same Pika device (`fisheye` and `RealSense color`)
+
+The implementation lives under `src/lerobot/robots/ur_pika` and is useful as a reference when:
+
+- your arm uses a network command interface instead of a servo bus
+- your gripper and cameras come from a separate vendor SDK
+- you want to keep the public LeRobot contract simple (`get_observation()` / `send_action()`) while hiding SDK-specific details inside the robot backend
+
+Example CLI usage:
+
+```bash
+lerobot-replay \
+  --robot.type=ur_pika \
+  --robot.robot_ip=192.168.1.15 \
+  --robot.control_mode=joint \
+  --dataset.repo_id=$HF_USER/my-ur-pika-dataset \
+  --dataset.episode=0
+```
+
+In `joint` mode, the robot exposes `joint_1.pos` ... `joint_6.pos` plus `gripper.pos`.
+In `tcp` mode, it exposes `tcp_x.pos` ... `tcp_rz.pos` plus `gripper.pos`.
+For policy training and deployment, `joint` mode is the recommended path because it matches the most common LeRobot dataset/action convention.
+
 ## Wrapping Up
 
 Once your robot class is complete, you can leverage the LeRobot ecosystem:
