@@ -120,14 +120,14 @@ def test_record_config_parses_explicit_pika_camera_override():
         args=[
             "--robot.type=ur_pika",
             "--robot.robot_ip=192.168.0.2",
-            "--robot.cameras={front_fisheye: {type: pika, source: fisheye, width: 640, height: 480, fps: 30}}",
+            "--robot.cameras={right_wrist_0_rgb: {type: pika, source: realsense_color, width: 640, height: 480, fps: 30}}",
             "--teleop.type=keyboard",
             f"--dataset.repo_id={DUMMY_REPO_ID}",
             "--dataset.single_task=Dummy task",
         ],
     )
 
-    assert cfg.robot.cameras["front_fisheye"].type == "pika"
+    assert cfg.robot.cameras["right_wrist_0_rgb"].type == "pika"
 
 
 def test_record_and_replay(tmp_path):

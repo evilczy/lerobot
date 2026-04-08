@@ -99,8 +99,7 @@ def patched_joint_robot(tmp_path):
     reader = _make_state_reader(state)
     shared_device = _make_shared_pika_device()
     cameras = {
-        "front_fisheye": _make_camera("front_fisheye"),
-        "wrist": _make_camera("wrist"),
+        "right_wrist_0_rgb": _make_camera("right_wrist_0_rgb"),
     }
 
     with (
@@ -144,8 +143,7 @@ def test_connect_get_observation_and_disconnect(patched_joint_robot):
         "joint_5.pos",
         "joint_6.pos",
         "gripper.pos",
-        "front_fisheye",
-        "wrist",
+        "right_wrist_0_rgb",
     }
     assert set(observation) == expected_keys
     assert observation["gripper.pos"] == 12.5
@@ -183,7 +181,7 @@ def test_send_action_tcp_mode_uses_movel(tmp_path):
     state = _make_state()
     reader = _make_state_reader(state)
     shared_device = _make_shared_pika_device()
-    cameras = {"front_fisheye": _make_camera("front_fisheye")}
+    cameras = {"right_wrist_0_rgb": _make_camera("right_wrist_0_rgb")}
 
     with (
         patch(

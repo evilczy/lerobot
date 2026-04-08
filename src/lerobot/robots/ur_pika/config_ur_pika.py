@@ -31,13 +31,9 @@ class URPikaControlMode(str, Enum):
 
 def _default_cameras() -> dict[str, CameraConfig]:
     return {
-        "front_fisheye": PikaCameraConfig(
-            source=PikaCameraSource.FISHEYE,
-            width=640,
-            height=480,
-            fps=30,
-        ),
-        "wrist": PikaCameraConfig(
+        # Default to a Pi0-friendly single wrist camera setup. Additional views such
+        # as `base_0_rgb` can still be added by overriding `robot.cameras`.
+        "right_wrist_0_rgb": PikaCameraConfig(
             source=PikaCameraSource.REALSENSE_COLOR,
             width=640,
             height=480,

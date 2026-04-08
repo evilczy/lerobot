@@ -182,3 +182,4 @@ outputs/
 # Local workspace helpers
 /.codex
 /lerobot/
+/ckpt

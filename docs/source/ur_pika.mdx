@@ -65,12 +65,17 @@ Robot type metadata becomes `ur_pika_tcp`.
 
 ## Default Cameras
 
-If you do not override `robot.cameras`, `ur_pika` creates two Pika-backed cameras:
+If you do not override `robot.cameras`, `ur_pika` creates a single Pi0-friendly wrist camera:
 
-- `front_fisheye`
-- `wrist`
+- `right_wrist_0_rgb`
 
 The runtime keeps the gripper and cameras on one shared Pika device handle so the SDK is initialized once per serial port.
+
+If you want to match multi-view policy checkpoints later, override `robot.cameras` explicitly and use camera names such as:
+
+- `base_0_rgb`
+- `left_wrist_0_rgb`
+- `right_wrist_0_rgb`
 
 ## Configuration
 
