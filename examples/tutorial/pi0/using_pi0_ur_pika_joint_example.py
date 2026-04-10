@@ -1,6 +1,7 @@
 #!/usr/bin/env python3  # 使用当前环境中的 python3 解释器执行这个 joint 模式示例脚本。
 # HF_ENDPOINT=https://hf-mirror.com HF_HUB_DISABLE_XET=1 uv run python examples/tutorial/pi0/using_pi0_ur_pika_joint_example.py   --device cuda   --dtype bfloat16   --tokenizer-path /home/czy/code/robot/lerobot/ckpt/paligemma_tokenizer
 # 跑之前需要sudo chmod 666 /dev/ttyUSB0
+# 如果夹爪无法控制，断电重启
 from __future__ import annotations  # 延迟解析类型注解，避免前向引用时报错。
 
 import argparse  # 导入命令行参数解析库，用于接收运行参数。
@@ -52,14 +53,14 @@ def parse_args() -> argparse.Namespace:  # 定义命令行参数解析函数。
         )  # 完成 description 字符串拼接。
     )  # 完成解析器初始化。
     parser.add_argument("--model-id", default="lerobot/pi0_base")  # 指定模型来源，可以是 Hugging Face repo id 或本地目录。
-    parser.add_argument("--ckpt-dir", type=Path, default=Path("/home/czy/code/robot/lerobot/ckpt"))  # 指定模型下载和本地读取目录。
+    parser.add_argument("--ckpt-dir", type=Path, default=Path("/home/czy/code/robot/lerobot/ckpt/pi0_base"))  # 指定模型下载和本地读取目录。
     parser.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")  # 指定推理设备，默认优先使用 CUDA。
     parser.add_argument("--dtype", choices=("float32", "bfloat16"), default=None)  # 指定 policy 权重加载精度，不传则按设备自动推断。
     parser.add_argument("--robot-ip", default="192.168.1.15")  # 指定 UR 控制器 IP 地址。
     parser.add_argument("--gripper-port", default=None)  # 指定 Pika 夹爪串口；不传则允许运行时自动解析。
     parser.add_argument("--tokenizer-path", default=None)  # 指定本地 tokenizer 目录；不传则优先从 ckpt 子目录解析。
     parser.add_argument("--task", default="grasp")  # 指定传给 PI0 的文本任务描述。
-    parser.add_argument("--steps", type=int, default=20)  # 指定主循环执行多少步。
+    parser.add_argument("--steps", type=int, default=10)  # 指定主循环执行多少步。
     parser.add_argument(  # 开始添加校准目录参数。
         "--calibration-dir",  # 指定参数名。
         type=Path,  # 把命令行值解析成 Path。

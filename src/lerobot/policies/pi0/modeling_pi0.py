@@ -833,7 +833,7 @@ class PI0Pytorch(nn.Module):  # see openpi `PI0Pytorch`
                 self.config.max_action_dim,
             )  # Use config max_action_dim for internal processing
             noise = self.sample_noise(actions_shape, device)
-
+        # prefix 指“图像 token + 语言 token”
         prefix_embs, prefix_pad_masks, prefix_att_masks = self.embed_prefix(
             images, img_masks, lang_tokens, lang_masks
         )
@@ -1277,7 +1277,6 @@ class PI0Policy(PreTrainedPolicy):
 
     def forward(self, batch: dict[str, Tensor], reduction: str = "mean") -> tuple[Tensor, dict]:
         """Run the batch through the model and compute the loss for training.
-
         Args:
             batch: Training batch containing observations and actions.
             reduction: How to reduce the loss. Options:
