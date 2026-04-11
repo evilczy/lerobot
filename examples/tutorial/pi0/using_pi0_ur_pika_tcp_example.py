@@ -3,8 +3,13 @@
 from __future__ import annotations  # 延迟解析类型注解，避免前向引用时报错。
 
 import argparse  # 导入命令行参数解析库，用于接收运行参数。
+import sys  # 导入 sys，用于补充 Python 模块搜索路径。
 import time  # 导入 time，用于超时控制和循环节拍控制。
 from pathlib import Path  # 导入 Path，统一处理本地路径。
+
+PROJECT_ROOT = Path(__file__).resolve().parents[3]  # 解析当前脚本所在仓库根目录，保证可以从任意工作目录启动脚本。
+if str(PROJECT_ROOT) not in sys.path:  # 如果仓库根目录还不在 Python 搜索路径里。
+    sys.path.insert(0, str(PROJECT_ROOT))  # 把仓库根目录插到最前面，优先解析当前项目内模块。
 
 import cv2  # 导入 OpenCV，用于前台显示夹爪相机画面。
 import numpy as np  # 导入 NumPy，用于处理相机图像数组。
@@ -54,12 +59,12 @@ def parse_args() -> argparse.Namespace:  # 定义命令行参数解析函数。
         )  # 完成 description 字符串拼接。
     )  # 完成解析器初始化。
     parser.add_argument("--model-id", default="lerobot/pi0_base")  # 指定模型来源，可以是 Hugging Face repo id 或本地目录。
-    parser.add_argument("--ckpt-dir", type=Path, default=Path("/home/czy/code/robot/lerobot/ckpt"))  # 指定模型下载和本地读取目录。
+    parser.add_argument("--ckpt-dir", type=Path, default=PROJECT_ROOT / "ckpt" / "pi0_base")  # 指定模型下载和本地读取目录。
     parser.add_argument("--device", default="cuda")  # 指定运行设备，默认优先使用 CUDA。
     parser.add_argument("--dtype", choices=("float32", "bfloat16"), default="bfloat16")  # 指定 policy 权重加载精度，不传则按设备自动推断。
     parser.add_argument("--robot-ip", default="192.168.1.15")  # 指定 UR 控制器 IP 地址。
     parser.add_argument("--gripper-port", default="/dev/ttyUSB0")  # 指定 Pika 夹爪串口；不传则允许运行时自动解析。
-    parser.add_argument("--tokenizer-path", default="/home/czy/code/robot/lerobot/ckpt/paligemma_tokenizer")  # 指定本地 tokenizer 目录；不传则优先从 ckpt 子目录解析。
+    parser.add_argument("--tokenizer-path", default=PROJECT_ROOT / "ckpt" / "paligemma_tokenizer")  # 指定本地 tokenizer 目录；不传则优先从 ckpt 子目录解析。
     parser.add_argument("--task", default="grasp")  # 指定传给 PI0 的文本任务描述。
     parser.add_argument("--camera-key", default="right_wrist_0_rgb")  # 指定机器人观测中的相机 key。
     parser.add_argument("--width", type=int, default=640)  # 指定相机图像宽度。
