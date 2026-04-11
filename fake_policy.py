@@ -25,7 +25,7 @@ from device_dector import (
     resolve_realsense_serial as detector_resolve_realsense_serial,
 )
 
-PIKA_SDK_ROOT = Path("/home/czy/code/robot/lerobot/third_party/pika_sdk")
+PIKA_SDK_ROOT = Path("./third_party/pika_sdk")
 if str(PIKA_SDK_ROOT) not in sys.path:
     sys.path.insert(0, str(PIKA_SDK_ROOT))
 
@@ -39,7 +39,7 @@ UR7E_STATE_PORT = int(os.getenv("UR7E_STATE_PORT", "30012"))
 # 优先级: 这里的显式配置 > 环境变量 > 自动探测
 # 留空("")时会回退到自动探测。
 DEFAULT_PIKA_GRIPPER_PORT = "/dev/ttyUSB0"
-DEFAULT_PIKA_FISHEYE_DEVICE = "81"
+DEFAULT_PIKA_FISHEYE_DEVICE = "1"
 # DEFAULT_PIKA_REALSENSE_SERIAL = "315122272459"(遥操作)
 DEFAULT_PIKA_REALSENSE_SERIAL = "230322270988"
 
